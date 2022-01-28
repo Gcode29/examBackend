@@ -10,7 +10,8 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     public function store(Request $request)
-    {
+    {   
+        // validate required fields
         $request->validate([
             'username' => ['required'],
             'password' => ['required']
@@ -18,12 +19,14 @@ class AuthController extends Controller
 
         $user = User::where('username', $request->username)->first();
 
+        // Throw's Error if User does not exist or invalid password
         if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'username' => ['The Provided credentials are incorrect.'],
             ]);
         }
 
+        // generate API token
         $token = $user->createToken($request->header('user_agent'))->plainTextToken;
 
         $response = [
